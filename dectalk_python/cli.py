@@ -12,7 +12,7 @@ from .api import (
 )
 
 
-HELP = """SAY-PY [options] [text]
+HELP = """dectalk-python [options] [text]
 
 Output options:
   -w outFile       Convert text into a wave file.
@@ -37,7 +37,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         options, text_args = parse_args(argv)
     except ValueError as exc:
-        print(f"say-py: {exc}", file=sys.stderr)
+        print(f"dectalk-python: {exc}", file=sys.stderr)
         return 2
 
     if options["help"]:
@@ -161,4 +161,3 @@ def _next_value(argv: list[str], index: int, flag: str) -> str:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

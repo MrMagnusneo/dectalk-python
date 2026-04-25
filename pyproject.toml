@@ -3,17 +3,16 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "dectalk-py"
+name = "dectalk-python"
 version = "0.1.0"
-description = "A pure Python DECtalk-style text-to-speech engine and SAY-compatible CLI."
+description = "Pure Python DECtalk-style text-to-speech engine with a SAY-compatible CLI"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "See repository licenses and original source notices." }
 authors = [{ name = "DECtalk Python port maintainers" }]
 
 [project.scripts]
-dectalk-py = "dectalk_py.cli:main"
-say-py = "dectalk_py.cli:main"
+dectalk-python = "dectalk_python.cli:main"
 
 [tool.setuptools]
-packages = ["dectalk_py"]
+packages = ["dectalk_python"]
