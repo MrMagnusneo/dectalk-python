@@ -41,11 +41,20 @@ CLI после установки пакета:
 dectalk-python -w hello.wav "Hello from DECtalk Python."
 ```
 
-Пример с голосом Wendy:
+Примеры всех голосов:
 
-```bash
-python -m dectalk -w wendy.wav "[:nw] Whisper voice example."
-```
+| Голос | Inline-команда | Описание | Пример |
+| --- | --- | --- | --- |
+| Paul | `[:np]` | Основной мужской голос | `python -m dectalk -w paul.wav "[:np] Hello from Paul."` |
+| Harry | `[:nh]` | Насыщенный мужской голос | `python -m dectalk -w harry.wav "[:nh] Hello from Harry."` |
+| Frank | `[:nf]` | Возрастной мужской голос | `python -m dectalk -w frank.wav "[:nf] Hello from Frank."` |
+| Dennis | `[:nd]` | Носовой мужской голос | `python -m dectalk -w dennis.wav "[:nd] Hello from Dennis."` |
+| Betty | `[:nb]` | Насыщенный женский голос | `python -m dectalk -w betty.wav "[:nb] Hello from Betty."` |
+| Ursula | `[:nu]` | Возрастной женский голос | `python -m dectalk -w ursula.wav "[:nu] Hello from Ursula."` |
+| Wendy | `[:nw]` | Шепотный женский голос | `python -m dectalk -w wendy.wav "[:nw] Whisper voice example."` |
+| Rita | `[:nr]` | Женский голос | `python -m dectalk -w rita.wav "[:nr] Hello from Rita."` |
+| Kit | `[:nk]` | Детский голос | `python -m dectalk -w kit.wav "[:nk] Hello from Kit."` |
+| Val | `[:nv]` | Настраиваемый пользовательский голос | `python -m dectalk -w val.wav "[:nv] Hello from Val."` |
 
 ### Пользовательские словари
 Файл словаря:
@@ -114,11 +123,20 @@ Installed CLI:
 dectalk-python -w hello.wav "Hello from DECtalk Python."
 ```
 
-Wendy voice example:
+All voice examples:
 
-```bash
-python -m dectalk -w wendy.wav "[:nw] Whisper voice example."
-```
+| Voice | Inline command | Description | Example |
+| --- | --- | --- | --- |
+| Paul | `[:np]` | Default male voice | `python -m dectalk -w paul.wav "[:np] Hello from Paul."` |
+| Harry | `[:nh]` | Full male voice | `python -m dectalk -w harry.wav "[:nh] Hello from Harry."` |
+| Frank | `[:nf]` | Aged male voice | `python -m dectalk -w frank.wav "[:nf] Hello from Frank."` |
+| Dennis | `[:nd]` | Nasal male voice | `python -m dectalk -w dennis.wav "[:nd] Hello from Dennis."` |
+| Betty | `[:nb]` | Full female voice | `python -m dectalk -w betty.wav "[:nb] Hello from Betty."` |
+| Ursula | `[:nu]` | Aged female voice | `python -m dectalk -w ursula.wav "[:nu] Hello from Ursula."` |
+| Wendy | `[:nw]` | Whispering female voice | `python -m dectalk -w wendy.wav "[:nw] Whisper voice example."` |
+| Rita | `[:nr]` | Female voice | `python -m dectalk -w rita.wav "[:nr] Hello from Rita."` |
+| Kit | `[:nk]` | Child voice | `python -m dectalk -w kit.wav "[:nk] Hello from Kit."` |
+| Val | `[:nv]` | User-designed voice | `python -m dectalk -w val.wav "[:nv] Hello from Val."` |
 
 ### User Dictionaries
 Dictionary file:
