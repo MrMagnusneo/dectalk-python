@@ -9,13 +9,13 @@
 ### О проекте
 `dectalk-python` - самостоятельная Python-реализация DECtalk-style синтеза речи. Это не побитовая копия исторических DECtalk-бинарников: проект реализует практичное подмножество SAY-совместимого CLI, inline-команд DECtalk, WAV-вывода, пользовательских словарей и `TextToSpeech*` API-обвязки.
 
+Оригинальный репозиторий DECtalk: https://github.com/dectalk/dectalk/
+
 Оригинальный архив исходников DECtalk в этой рабочей области находится рядом: `/home/x13/VScodeProjects/tts/dectalk`.
 
 ### Структура
-- `dectalk_python/` - Python-пакет, CLI, parser, API-обвязка и синтезатор.
+- `dectalk/` - Python-пакет, CLI, parser, API-обвязка и синтезатор.
 - `tests/` - unittest-проверки парсера, G2P и WAV-вывода.
-- `build_executable.py` - сборка одного исполняемого файла через PyInstaller.
-- `pyinstaller_entry.py` - точка входа для PyInstaller.
 - `dectalk-python.spec` - spec-файл PyInstaller.
 
 ### Возможности
@@ -32,7 +32,7 @@
 
 ```bash
 cd /home/x13/VScodeProjects/tts/dectalk-python
-python -m dectalk_python -w hello.wav "Hello from DECtalk Python."
+python -m dectalk -w hello.wav "Hello from DECtalk Python."
 ```
 
 CLI после установки пакета:
@@ -44,7 +44,7 @@ dectalk-python -w hello.wav "Hello from DECtalk Python."
 Пример с голосом Wendy:
 
 ```bash
-python -m dectalk_python -w wendy.wav "[:nw] Whisper voice example."
+python -m dectalk -w wendy.wav "[:nw] Whisper voice example."
 ```
 
 ### Пользовательские словари
@@ -58,7 +58,7 @@ robot=R OW B AA T
 Запуск:
 
 ```bash
-python -m dectalk_python -d dictionary.txt -w out.wav "dectalk robot"
+python -m dectalk -d dictionary.txt -w out.wav "dectalk robot"
 ```
 
 ### Сборка исполняемого файла
@@ -68,19 +68,13 @@ PyInstaller собирает бинарник под текущую ОС:
 
 ```bash
 python -m pip install pyinstaller
-python build_executable.py
-```
-
-То же через spec-файл:
-
-```bash
 python -m PyInstaller --clean dectalk-python.spec
 ```
 
 ### Проверка
 ```bash
 python -m unittest
-python -m dectalk_python -w /tmp/dectalk-python-test.wav "Smoke test"
+python -m dectalk -w /tmp/dectalk-python-test.wav "Smoke test"
 ```
 
 ## English
@@ -88,13 +82,13 @@ python -m dectalk_python -w /tmp/dectalk-python-test.wav "Smoke test"
 ### About
 `dectalk-python` is a standalone Python implementation of DECtalk-style speech synthesis. It is not a bit-exact clone of the historical DECtalk binaries: it implements a practical subset of the SAY-compatible CLI, DECtalk inline commands, WAV output, user dictionaries, and a small `TextToSpeech*` compatibility layer.
 
+Original DECtalk repository: https://github.com/dectalk/dectalk/
+
 The original DECtalk source archive in this workspace is next to it: `/home/x13/VScodeProjects/tts/dectalk`.
 
 ### Layout
-- `dectalk_python/` - Python package, CLI, parser, API layer, and synthesizer.
+- `dectalk/` - Python package, CLI, parser, API layer, and synthesizer.
 - `tests/` - unittest coverage for parser, G2P, and WAV output.
-- `build_executable.py` - single-file executable build helper.
-- `pyinstaller_entry.py` - PyInstaller entry point.
 - `dectalk-python.spec` - PyInstaller spec file.
 
 ### Features
@@ -111,7 +105,7 @@ Requirements:
 
 ```bash
 cd /home/x13/VScodeProjects/tts/dectalk-python
-python -m dectalk_python -w hello.wav "Hello from DECtalk Python."
+python -m dectalk -w hello.wav "Hello from DECtalk Python."
 ```
 
 Installed CLI:
@@ -123,7 +117,7 @@ dectalk-python -w hello.wav "Hello from DECtalk Python."
 Wendy voice example:
 
 ```bash
-python -m dectalk_python -w wendy.wav "[:nw] Whisper voice example."
+python -m dectalk -w wendy.wav "[:nw] Whisper voice example."
 ```
 
 ### User Dictionaries
@@ -137,7 +131,7 @@ robot=R OW B AA T
 Run:
 
 ```bash
-python -m dectalk_python -d dictionary.txt -w out.wav "dectalk robot"
+python -m dectalk -d dictionary.txt -w out.wav "dectalk robot"
 ```
 
 ### Build Executable
@@ -147,17 +141,11 @@ PyInstaller builds for the current OS:
 
 ```bash
 python -m pip install pyinstaller
-python build_executable.py
-```
-
-The spec file can also be used directly:
-
-```bash
 python -m PyInstaller --clean dectalk-python.spec
 ```
 
 ### Checks
 ```bash
 python -m unittest
-python -m dectalk_python -w /tmp/dectalk-python-test.wav "Smoke test"
+python -m dectalk -w /tmp/dectalk-python-test.wav "Smoke test"
 ```

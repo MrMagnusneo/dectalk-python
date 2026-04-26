@@ -12,7 +12,7 @@ license = { text = "See repository licenses and original source notices." }
 authors = [{ name = "DECtalk Python port maintainers" }]
 
 [project.scripts]
-dectalk-python = "dectalk_python.cli:main"
+dectalk-python = "dectalk.cli:main"
 
 [tool.setuptools]
-packages = ["dectalk_python"]
+packages = ["dectalk"]

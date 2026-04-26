@@ -3,9 +3,9 @@ import tempfile
 import unittest
 import wave
 
-from dectalk_python import DectalkParser, DectalkSynthesizer, TextToSpeech
-from dectalk_python.g2p import arpabet_to_phones, text_to_phones
-from dectalk_python.parser import SpeechSegment, ToneSegment
+from dectalk import DectalkParser, DectalkSynthesizer, TextToSpeech
+from dectalk.g2p import arpabet_to_phones, text_to_phones
+from dectalk.parser import SpeechSegment, ToneSegment
 
 
 class ParserTests(unittest.TestCase):
