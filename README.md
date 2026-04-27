@@ -7,28 +7,40 @@
 ## Русский
 
 ### О проекте
-`dectalk-python` - самостоятельная Python-реализация DECtalk-style синтеза речи. Это не побитовая копия исторических DECtalk-бинарников: проект реализует практичное подмножество SAY-совместимого CLI, inline-команд DECtalk, WAV-вывода, пользовательских словарей и `TextToSpeech*` API-обвязки.
+`dectalk-python` - Python-обвязка оригинального движка DECtalk. Речь теперь рендерится через native `libdectalk.so`, собранный из исходников DECtalk, а не через прежний упрощенный Python-синтезатор.
 
 Оригинальный репозиторий DECtalk: https://github.com/dectalk/dectalk/
 
-Оригинальный архив исходников DECtalk в этой рабочей области находится рядом: `/home/x13/VScodeProjects/tts/dectalk`.
+Оригинальный архив исходников DECtalk в этой рабочей области находится рядом: `/home/x13/VScodeProjects/tts/original/dectalk`.
 
 ### Структура
-- `dectalk/` - Python-пакет, CLI, parser, API-обвязка и синтезатор.
+- `dectalk/` - Python-пакет, CLI, parser, API-обвязка и native backend.
+- `dectalk/build_backend.py` - сборка оригинального DECtalk из `original/dectalk`.
+- `dectalk/native_bin/` - локальные runtime-файлы DECtalk после сборки.
 - `tests/` - unittest-проверки парсера, G2P и WAV-вывода.
 - `dectalk-python.spec` - spec-файл PyInstaller.
 
 ### Возможности
-- Синтез речи в WAV без внешних runtime-зависимостей.
+- Синтез речи оригинальным DECtalk в WAV `11025 Hz`, `16-bit mono`.
 - Ввод текста через аргументы командной строки или stdin.
 - SAY-like параметры: `-w`, `-pre`, `-post`, `-d`, `-lt`, `-lp`, `-ls`.
 - Inline-команды DECtalk: `[:name]`, `[:nX]`, `[:rate]`, `[:volume]`, `[:tone]`, `[:dial]`, `[:phoneme]`, `[:say]`, `[:mode]`.
-- Несколько DECtalk-style голосов, включая шепотный `Wendy` через `[:nw]`.
-- Пользовательские словари в простом формате `word=ARPABET PHONES`.
+- Оригинальные DECtalk-голоса, включая шепотный `Wendy` через `[:nw]`.
+- Старый Python-синтезатор удален: в пакете остался только native DECtalk backend.
 
 ### Запуск из исходников
 Требования:
 - Python 3.10+
+- `git`, `cmake`, `tar` и C-компилятор для первой сборки native backend.
+
+Собрать native backend вручную:
+
+```bash
+cd /home/x13/VScodeProjects/tts/dectalk-python
+python -m dectalk.build_backend
+```
+
+Если backend еще не собран, `TextToSpeech` попробует собрать его автоматически при первом запуске.
 
 ```bash
 cd /home/x13/VScodeProjects/tts/dectalk-python
@@ -57,18 +69,7 @@ dectalk-python -w hello.wav "Hello from DECtalk Python."
 | Val | `[:nv]` | Настраиваемый пользовательский голос | `python -m dectalk -w val.wav "[:nv] Hello from Val."` |
 
 ### Пользовательские словари
-Файл словаря:
-
-```text
-dectalk=D EH K T AO K
-robot=R OW B AA T
-```
-
-Запуск:
-
-```bash
-python -m dectalk -d dictionary.txt -w out.wav "dectalk robot"
-```
+Native backend использует оригинальный DECtalk-словарь `dtalk_us.dic`. CLI принимает `-d` как путь к native DECtalk user dictionary file; старый Python-формат `word=ARPABET PHONES` удален вместе с Python-синтезатором.
 
 ### Сборка исполняемого файла
 PyInstaller собирает бинарник под текущую ОС:
@@ -89,28 +90,40 @@ python -m dectalk -w /tmp/dectalk-python-test.wav "Smoke test"
 ## English
 
 ### About
-`dectalk-python` is a standalone Python implementation of DECtalk-style speech synthesis. It is not a bit-exact clone of the historical DECtalk binaries: it implements a practical subset of the SAY-compatible CLI, DECtalk inline commands, WAV output, user dictionaries, and a small `TextToSpeech*` compatibility layer.
+`dectalk-python` is a Python binding for the original DECtalk engine. Speech is now rendered through native `libdectalk.so` built from the DECtalk sources, not through the previous simplified Python synthesizer.
 
 Original DECtalk repository: https://github.com/dectalk/dectalk/
 
-The original DECtalk source archive in this workspace is next to it: `/home/x13/VScodeProjects/tts/dectalk`.
+The original DECtalk source archive in this workspace is next to it: `/home/x13/VScodeProjects/tts/original/dectalk`.
 
 ### Layout
-- `dectalk/` - Python package, CLI, parser, API layer, and synthesizer.
+- `dectalk/` - Python package, CLI, parser, API layer, and native backend.
+- `dectalk/build_backend.py` - builds original DECtalk from `original/dectalk`.
+- `dectalk/native_bin/` - local DECtalk runtime files after the build.
 - `tests/` - unittest coverage for parser, G2P, and WAV output.
 - `dectalk-python.spec` - PyInstaller spec file.
 
 ### Features
-- Speech synthesis to WAV with no external runtime dependencies.
+- Original DECtalk speech synthesis to `11025 Hz`, `16-bit mono` WAV.
 - Text input through command-line arguments or stdin.
 - SAY-like options: `-w`, `-pre`, `-post`, `-d`, `-lt`, `-lp`, `-ls`.
 - DECtalk inline commands: `[:name]`, `[:nX]`, `[:rate]`, `[:volume]`, `[:tone]`, `[:dial]`, `[:phoneme]`, `[:say]`, `[:mode]`.
-- Several DECtalk-style voices, including whispering `Wendy` through `[:nw]`.
-- User dictionaries with simple `word=ARPABET PHONES` entries.
+- Original DECtalk voices, including whispering `Wendy` through `[:nw]`.
+- The old Python synthesizer has been removed: the package now keeps only the native DECtalk backend.
 
 ### Run From Source
 Requirements:
 - Python 3.10+
+- `git`, `cmake`, `tar`, and a C compiler for the first native backend build.
+
+Build the native backend manually:
+
+```bash
+cd /home/x13/VScodeProjects/tts/dectalk-python
+python -m dectalk.build_backend
+```
+
+If the backend has not been built yet, `TextToSpeech` will try to build it automatically on first use.
 
 ```bash
 cd /home/x13/VScodeProjects/tts/dectalk-python
@@ -139,18 +152,7 @@ All voice examples:
 | Val | `[:nv]` | User-designed voice | `python -m dectalk -w val.wav "[:nv] Hello from Val."` |
 
 ### User Dictionaries
-Dictionary file:
-
-```text
-dectalk=D EH K T AO K
-robot=R OW B AA T
-```
-
-Run:
-
-```bash
-python -m dectalk -d dictionary.txt -w out.wav "dectalk robot"
-```
+The native backend uses the original DECtalk `dtalk_us.dic` dictionary. The CLI accepts `-d` as a path to a native DECtalk user dictionary file; the old Python `word=ARPABET PHONES` format was removed with the Python synthesizer.
 
 ### Build Executable
 PyInstaller builds for the current OS:

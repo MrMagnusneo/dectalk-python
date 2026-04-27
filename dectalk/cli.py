@@ -23,7 +23,7 @@ Output options:
 Input options:
   -pre text        Text or DECtalk commands passed before normal input.
   -post text       Text or DECtalk commands passed after normal input.
-  -d userDict      Load a simple user dictionary: word=ARPABET phones.
+  -d userDict      Load a native DECtalk user dictionary file.
   -v               Print version.
   -h, -?           Show this help.
 

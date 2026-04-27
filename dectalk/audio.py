@@ -5,7 +5,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable
 import io
-import math
 import wave
 
 
@@ -21,19 +20,9 @@ def clamp_i16(value: float) -> int:
     return int(value)
 
 
-def fade_value(index: int, total: int, fade: int) -> float:
-    if fade <= 0 or total <= 0:
-        return 1.0
-    if index < fade:
-        return index / fade
-    if index >= total - fade:
-        return max(0.0, (total - index - 1) / fade)
-    return 1.0
-
-
 @dataclass
 class AudioBuffer:
-    sample_rate: int = 22050
+    sample_rate: int = 11025
     samples: array = field(default_factory=lambda: array("h"))
 
     def __len__(self) -> int:
@@ -83,30 +72,23 @@ class AudioBuffer:
     def copy(self) -> "AudioBuffer":
         return AudioBuffer(self.sample_rate, array("h", self.samples))
 
+    @classmethod
+    def from_wav_bytes(cls, data: bytes) -> "AudioBuffer":
+        with wave.open(io.BytesIO(data), "rb") as wav:
+            channels = wav.getnchannels()
+            sample_width = wav.getsampwidth()
+            sample_rate = wav.getframerate()
+            frames = wav.readframes(wav.getnframes())
+        if channels != 1:
+            raise ValueError(f"expected mono WAV, got {channels} channels")
+        if sample_width != 2:
+            raise ValueError(f"expected 16-bit PCM WAV, got {sample_width * 8}-bit samples")
+        samples = array("h")
+        samples.frombytes(frames)
+        if samples.itemsize != 2:
+            raise ValueError("native 16-bit array type is unavailable")
+        return cls(sample_rate, samples)
 
-def sine_samples(
-    frequencies: float | Iterable[float],
-    duration_ms: float,
-    sample_rate: int,
-    amplitude: float = 0.45,
-    fade_ms: float = 6.0,
-) -> array:
-    if isinstance(frequencies, (int, float)):
-        freqs = [float(frequencies)]
-    else:
-        freqs = [float(freq) for freq in frequencies]
-    count = max(0, int(sample_rate * duration_ms / 1000.0))
-    fade = int(sample_rate * fade_ms / 1000.0)
-    out = array("h")
-    if not freqs or count == 0:
-        return out
-    gain = amplitude * MAX_I16 / len(freqs)
-    for index in range(count):
-        t = index / sample_rate
-        env = fade_value(index, count, fade)
-        value = 0.0
-        for freq in freqs:
-            value += math.sin(2.0 * math.pi * freq * t)
-        out.append(clamp_i16(value * gain * env))
-    return out
-
+    @classmethod
+    def read_wav(cls, path: str | Path) -> "AudioBuffer":
+        return cls.from_wav_bytes(Path(path).read_bytes())

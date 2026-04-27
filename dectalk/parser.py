@@ -14,8 +14,8 @@ def _clamp(value: int, lower: int, upper: int) -> int:
 @dataclass
 class SynthState:
     voice_name: str = "paul"
-    rate: int = 200
-    volume: int = 90
+    rate: int = 180
+    volume: int = 100
     phoneme_mode: bool = False
     phoneme_silent: bool = False
     say_mode: str = "clause"
@@ -220,16 +220,16 @@ class DectalkParser:
             return index
         action = tokens[index].lower()
         if action == "set" and index + 1 < len(tokens):
-            self.state.volume = _clamp(_safe_int(tokens[index + 1], self.state.volume), 0, 99)
+            self.state.volume = _clamp(_safe_int(tokens[index + 1], self.state.volume), 0, 100)
             return index + 2
         if action == "up" and index + 1 < len(tokens):
-            self.state.volume = _clamp(self.state.volume + _safe_int(tokens[index + 1], 0), 0, 99)
+            self.state.volume = _clamp(self.state.volume + _safe_int(tokens[index + 1], 0), 0, 100)
             return index + 2
         if action == "down" and index + 1 < len(tokens):
-            self.state.volume = _clamp(self.state.volume - _safe_int(tokens[index + 1], 0), 0, 99)
+            self.state.volume = _clamp(self.state.volume - _safe_int(tokens[index + 1], 0), 0, 100)
             return index + 2
         if action.isdigit():
-            self.state.volume = _clamp(_safe_int(action, self.state.volume), 0, 99)
+            self.state.volume = _clamp(_safe_int(action, self.state.volume), 0, 100)
             return index + 1
         return index + 1
 

@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TextIO
 
 from .audio import AudioBuffer
-from .g2p import Phone, arpabet_to_phones, phones_to_symbols, syllables_from_phones, text_to_phones
-from .parser import DectalkParser, SpeechSegment, SynthState
-from .synth import DectalkSynthesizer
+from .parser import DectalkParser, SynthState
+from .native import NativeDectalkBackend
 from .voices import resolve_voice
 
 
@@ -17,19 +15,19 @@ TTS_FORCE = 1
 LOG_TEXT = "text"
 LOG_PHONEMES = "phonemes"
 LOG_SYLLABLES = "syllables"
-VERSION = "DECtalk Python 0.1.0"
+VERSION = "DECtalk Python 0.2.0 (native DECtalk backend)"
 
 
 class TextToSpeech:
-    def __init__(self, sample_rate: int = 22050):
+    def __init__(self, *, backend: NativeDectalkBackend | None = None):
         self.state = SynthState()
         self.parser = DectalkParser(self.state)
-        self.synthesizer = DectalkSynthesizer(sample_rate)
-        self.dictionary: dict[str, list[Phone]] = {}
+        self.backend = backend or NativeDectalkBackend()
+        self.dictionary_paths: list[Path] = []
         self._wave_path: Path | None = None
         self._wave_buffer: AudioBuffer | None = None
-        self._last_audio = AudioBuffer(sample_rate)
-        self._log_file: TextIO | None = None
+        self._last_audio = AudioBuffer(self.backend.sample_rate)
+        self._log_path: Path | None = None
         self._log_mode = LOG_TEXT
 
     @property
@@ -37,9 +35,19 @@ class TextToSpeech:
         return self._last_audio.copy()
 
     def synthesize(self, text: str) -> AudioBuffer:
-        segments = self.parser.parse(text)
-        self._write_log(segments)
-        return self.synthesizer.render(segments, self.dictionary)
+        voice = self.state.voice_name
+        rate = self.state.rate
+        volume = self.state.volume
+        self.parser.parse(text)
+        return self.backend.synthesize(
+            text,
+            voice=voice,
+            rate=rate,
+            volume=volume,
+            dictionary_paths=self.dictionary_paths,
+            log_path=self._log_path,
+            log_mode=self._log_mode,
+        )
 
     def speak(self, text: str, flags: int = TTS_NORMAL) -> int:
         audio = self.synthesize(text or "")
@@ -51,40 +59,40 @@ class TextToSpeech:
     def open_wave_out_file(self, path: str | Path) -> int:
         self.sync()
         self._wave_path = Path(path)
-        self._wave_buffer = AudioBuffer(self.synthesizer.sample_rate)
+        self._wave_buffer = AudioBuffer(self.backend.sample_rate)
         return MMSYSERR_NOERROR
 
     def close_wave_out_file(self) -> int:
         if self._wave_path is not None and self._wave_buffer is not None:
-            self._wave_buffer.normalize().write_wav(self._wave_path)
+            self._wave_buffer.write_wav(self._wave_path)
         self._wave_path = None
         self._wave_buffer = None
         return MMSYSERR_NOERROR
 
     def open_log_file(self, path: str | Path, mode: str = LOG_TEXT) -> int:
         self.close_log_file()
-        self._log_file = Path(path).open("w", encoding="utf-8")
+        self._log_path = Path(path)
         self._log_mode = mode
         return MMSYSERR_NOERROR
 
     def close_log_file(self) -> int:
-        if self._log_file is not None:
-            self._log_file.close()
-        self._log_file = None
+        self._log_path = None
         return MMSYSERR_NOERROR
 
     def load_user_dictionary(self, path: str | Path) -> int:
-        self.dictionary.update(load_user_dictionary(path))
+        dictionary_path = Path(path)
+        if dictionary_path not in self.dictionary_paths:
+            self.dictionary_paths.append(dictionary_path)
         return MMSYSERR_NOERROR
 
     def unload_user_dictionary(self) -> int:
-        self.dictionary.clear()
+        self.dictionary_paths.clear()
         return MMSYSERR_NOERROR
 
     def reset(self, reset_state: bool = True) -> int:
-        self._last_audio = AudioBuffer(self.synthesizer.sample_rate)
+        self._last_audio = AudioBuffer(self.backend.sample_rate)
         if self._wave_buffer is not None:
-            self._wave_buffer = AudioBuffer(self.synthesizer.sample_rate)
+            self._wave_buffer = AudioBuffer(self.backend.sample_rate)
         if reset_state:
             self.state = SynthState()
             self.parser.state = self.state
@@ -113,42 +121,8 @@ class TextToSpeech:
         return MMSYSERR_NOERROR
 
     def set_volume(self, volume: int) -> int:
-        self.state.volume = max(0, min(99, int(volume)))
+        self.state.volume = max(0, min(100, int(volume)))
         return MMSYSERR_NOERROR
-
-    def _write_log(self, segments: list[object]) -> None:
-        if self._log_file is None:
-            return
-        for segment in segments:
-            if not isinstance(segment, SpeechSegment):
-                continue
-            if self._log_mode == LOG_TEXT:
-                self._log_file.write(segment.text)
-            elif self._log_mode == LOG_PHONEMES:
-                phones = arpabet_to_phones(segment.text) if segment.phonemes else text_to_phones(segment.text, segment.state, self.dictionary)
-                self._log_file.write(" ".join(phones_to_symbols(phones)) + "\n")
-            elif self._log_mode == LOG_SYLLABLES:
-                phones = arpabet_to_phones(segment.text) if segment.phonemes else text_to_phones(segment.text, segment.state, self.dictionary)
-                self._log_file.write(" ".join(syllables_from_phones(phones)) + "\n")
-
-
-def load_user_dictionary(path: str | Path) -> dict[str, list[Phone]]:
-    entries: dict[str, list[Phone]] = {}
-    for raw in Path(path).read_text(encoding="utf-8", errors="ignore").splitlines():
-        line = raw.strip()
-        if not line or line.startswith(("#", ";")):
-            continue
-        if "=" in line:
-            word, pronunciation = line.split("=", 1)
-        else:
-            parts = line.split(maxsplit=1)
-            if len(parts) != 2:
-                continue
-            word, pronunciation = parts
-        phones = arpabet_to_phones(pronunciation)
-        if phones:
-            entries[word.strip().lower()] = phones
-    return entries
 
 
 def TextToSpeechStartup(*_args, **_kwargs) -> TextToSpeech:
@@ -217,4 +191,3 @@ def TextToSpeechSetVolume(handle: TextToSpeech, _volume_type: int, volume: int) 
 
 def TextToSpeechVersion() -> str:
     return VERSION
-

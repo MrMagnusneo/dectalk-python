@@ -1,8 +1,7 @@
-"""Pure Python DECtalk-style speech synthesis.
+"""Python bindings for the original DECtalk speech engine.
 
-This package is an independent Python implementation that preserves a useful
-subset of DECtalk's public surface: SAY-like command line behavior, inline
-commands, and a small TextToSpeech* compatibility layer.
+The public surface keeps the SAY-like CLI and TextToSpeech* compatibility
+helpers, while speech is rendered by the native DECtalk engine.
 """
 
 from .api import (
@@ -29,15 +28,16 @@ from .api import (
     TextToSpeechVersion,
 )
 from .audio import AudioBuffer
+from .native import DectalkNativeError, NativeDectalkBackend
 from .parser import DectalkParser, SynthState
-from .synth import DectalkSynthesizer
 from .voices import VoiceProfile, voice_names
 
 __all__ = [
     "AudioBuffer",
     "DectalkParser",
-    "DectalkSynthesizer",
+    "DectalkNativeError",
     "MMSYSERR_NOERROR",
+    "NativeDectalkBackend",
     "SynthState",
     "TTS_FORCE",
     "TTS_NORMAL",
@@ -63,5 +63,4 @@ __all__ = [
     "voice_names",
 ]
 
-__version__ = "0.1.0"
-
+__version__ = "0.2.0"

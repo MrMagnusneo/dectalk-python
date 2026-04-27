@@ -4,12 +4,16 @@ from pathlib import Path
 
 
 base = Path(SPECPATH)
+native_bin = base / "dectalk" / "native_bin"
+datas = []
+if native_bin.exists():
+    datas.append((str(native_bin), "dectalk/native_bin"))
 
 a = Analysis(
     [str(base / "dectalk" / "__main__.py")],
     pathex=[str(base)],
     binaries=[],
-    datas=[],
+    datas=datas,
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

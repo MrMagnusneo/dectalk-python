@@ -1,10 +1,12 @@
 from pathlib import Path
+import os
+import subprocess
 import tempfile
 import unittest
 import wave
 
-from dectalk import DectalkParser, DectalkSynthesizer, TextToSpeech
-from dectalk.g2p import arpabet_to_phones, text_to_phones
+from dectalk import DectalkParser, TextToSpeech
+from dectalk.native import native_bundle_dir
 from dectalk.parser import SpeechSegment, ToneSegment
 
 
@@ -26,19 +28,7 @@ class ParserTests(unittest.TestCase):
         self.assertTrue(segments[0].phonemes)
 
 
-class G2PTests(unittest.TestCase):
-    def test_text_to_phones(self):
-        symbols = [phone.symbol for phone in text_to_phones("hello DECtalk")]
-        self.assertIn("HH", symbols)
-        self.assertIn("AO", symbols)
-
-    def test_arpabet_pause(self):
-        phones = arpabet_to_phones("dh ih s _<200>")
-        self.assertEqual(phones[-1].symbol, "SIL")
-        self.assertEqual(phones[-1].duration_ms, 200)
-
-
-class SynthTests(unittest.TestCase):
+class NativeSynthTests(unittest.TestCase):
     def test_wav_output(self):
         engine = TextToSpeech()
         with tempfile.TemporaryDirectory() as tmp:
@@ -50,13 +40,28 @@ class SynthTests(unittest.TestCase):
             with wave.open(str(path), "rb") as wav:
                 self.assertEqual(wav.getnchannels(), 1)
                 self.assertEqual(wav.getsampwidth(), 2)
+                self.assertEqual(wav.getframerate(), 11025)
                 self.assertGreater(wav.getnframes(), 1000)
 
-    def test_direct_synth(self):
-        synth = DectalkSynthesizer(sample_rate=11025)
-        audio = synth.synthesize("[:rate 300]test")
+    def test_direct_native_synth_matches_original_say(self):
+        engine = TextToSpeech()
+        audio = engine.synthesize("[:np] Hello, world!")
         self.assertEqual(audio.sample_rate, 11025)
-        self.assertGreater(len(audio.samples), 500)
+        self.assertGreater(len(audio.samples), 1000)
+
+        bundle = native_bundle_dir()
+        say = bundle / "say"
+        if not say.exists():
+            self.skipTest("native say executable is not bundled")
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "say.wav"
+            subprocess.run(
+                [str(say), "-e", "1", "-fo", str(path), "-a", "[:np] Hello, world!"],
+                cwd=bundle,
+                env={**os.environ, "LD_LIBRARY_PATH": str(bundle)},
+                check=True,
+            )
+            self.assertEqual(audio.to_wav_bytes(), path.read_bytes())
 
 
 if __name__ == "__main__":

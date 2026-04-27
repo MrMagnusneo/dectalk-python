@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dectalk-python"
-version = "0.1.0"
-description = "Pure Python DECtalk-style text-to-speech engine with a SAY-compatible CLI"
+version = "0.2.0"
+description = "Python bindings for the original DECtalk text-to-speech engine with a SAY-compatible CLI"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "See repository licenses and original source notices." }
@@ -16,3 +16,6 @@ dectalk-python = "dectalk.cli:main"
 
 [tool.setuptools]
 packages = ["dectalk"]
+
+[tool.setuptools.package-data]
+dectalk = ["native_bin/*", "native_bin/dic/*"]
