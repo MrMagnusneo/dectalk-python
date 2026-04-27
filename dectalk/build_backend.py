@@ -23,22 +23,25 @@ def native_bundle_dir() -> Path:
     return Path(__file__).resolve().parent / "native_bin"
 
 
+def bundled_source_dir() -> Path:
+    return Path(__file__).resolve().parent / "native_src"
+
+
 def build_backend(
     *,
     force: bool = False,
-    original_repo: str | Path | None = None,
+    source_dir: str | Path | None = None,
     output_dir: str | Path | None = None,
 ) -> Path:
-    """Build the original DECtalk engine into this Python package.
+    """Build the bundled DECtalk engine into this Python package.
 
-    The checked-out original repository is left untouched.  We archive the
-    buildable CMake branch into dectalk-python/build, patch that temporary copy
-    for headless Linux, and copy only the runtime files used by ctypes.
+    The bundled source tree is copied into dectalk-python/build, patched for a
+    headless Unix build, and only the runtime files used by ctypes are copied
+    into the Python package.
     """
 
     package_root = Path(__file__).resolve().parents[1]
-    workspace_root = package_root.parent
-    repo = Path(original_repo) if original_repo is not None else workspace_root / "original" / "dectalk"
+    bundled_src = Path(source_dir) if source_dir is not None else bundled_source_dir()
     out_dir = Path(output_dir) if output_dir is not None else native_bundle_dir()
     lib_name = native_library_name()
 
@@ -47,31 +50,26 @@ def build_backend(
 
     if sys.platform == "win32":
         raise DectalkBuildError("native DECtalk auto-build is currently implemented for Unix-like systems")
-    if not repo.exists():
-        raise DectalkBuildError(f"original DECtalk repository was not found: {repo}")
-    if shutil.which("git") is None:
-        raise DectalkBuildError("git is required to export original/dectalk origin/cmake")
+    if not (bundled_src / "CMakeLists.txt").exists():
+        raise DectalkBuildError(f"bundled DECtalk source tree was not found: {bundled_src}")
     if shutil.which("cmake") is None:
-        raise DectalkBuildError("cmake is required to build the original DECtalk backend")
-    if shutil.which("tar") is None:
-        raise DectalkBuildError("tar is required to unpack the original DECtalk archive")
+        raise DectalkBuildError("cmake is required to build the DECtalk backend")
 
     build_area = package_root / "build"
-    source_dir = build_area / "dectalk-native-src"
+    build_source_dir = build_area / "dectalk-native-src"
     build_dir = build_area / "dectalk-native-build"
 
     if force:
-        shutil.rmtree(source_dir, ignore_errors=True)
+        shutil.rmtree(build_source_dir, ignore_errors=True)
         shutil.rmtree(build_dir, ignore_errors=True)
 
-    if not (source_dir / "CMakeLists.txt").exists():
-        shutil.rmtree(source_dir, ignore_errors=True)
-        source_dir.mkdir(parents=True)
-        _export_cmake_branch(repo, source_dir)
-        _patch_headless_linux_build(source_dir)
+    if not (build_source_dir / "CMakeLists.txt").exists():
+        shutil.rmtree(build_source_dir, ignore_errors=True)
+        shutil.copytree(bundled_src, build_source_dir)
+        _patch_headless_linux_build(build_source_dir)
 
     build_dir.mkdir(parents=True, exist_ok=True)
-    _run(["cmake", "-S", str(source_dir), "-B", str(build_dir), "-DCMAKE_BUILD_TYPE=Release"])
+    _run(["cmake", "-S", str(build_source_dir), "-B", str(build_dir), "-DCMAKE_BUILD_TYPE=Release"])
     jobs = str(max(1, os.cpu_count() or 1))
     _run(["cmake", "--build", str(build_dir), "--target", "dict", "-j", jobs])
     _run(["cmake", "--build", str(build_dir), "--target", "say", "-j", jobs])
@@ -107,29 +105,6 @@ def _is_complete_bundle(bundle_dir: Path, lib_name: str) -> bool:
         and (bundle_dir / "DECtalk.conf").exists()
         and (bundle_dir / "dic" / "dtalk_us.dic").exists()
     )
-
-
-def _export_cmake_branch(repo: Path, source_dir: Path) -> None:
-    archive = subprocess.Popen(
-        ["git", "-C", str(repo), "archive", "--format=tar", "origin/cmake"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    assert archive.stdout is not None
-    unpack = subprocess.run(
-        ["tar", "-x", "-C", str(source_dir)],
-        stdin=archive.stdout,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        check=False,
-    )
-    archive.stdout.close()
-    _, archive_stderr = archive.communicate()
-    if archive.returncode != 0:
-        raise DectalkBuildError(archive_stderr.decode(errors="replace"))
-    if unpack.returncode != 0:
-        raise DectalkBuildError(unpack.stderr)
 
 
 def _patch_headless_linux_build(source_dir: Path) -> None:

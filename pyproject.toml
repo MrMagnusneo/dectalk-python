@@ -18,4 +18,4 @@ dectalk-python = "dectalk.cli:main"
 packages = ["dectalk"]
 
 [tool.setuptools.package-data]
-dectalk = ["native_bin/*", "native_bin/dic/*"]
+dectalk = ["native_bin/*", "native_bin/dic/*", "native_src/**/*"]

@@ -11,11 +11,12 @@
 
 Оригинальный репозиторий DECtalk: https://github.com/dectalk/dectalk/
 
-Оригинальный архив исходников DECtalk в этой рабочей области находится рядом: `/home/x13/VScodeProjects/tts/original/dectalk`.
+Исходники DECtalk, нужные для локальной сборки native backend, лежат внутри проекта в `dectalk/native_src/`.
 
 ### Структура
 - `dectalk/` - Python-пакет, CLI и API.
-- `dectalk/build_backend.py` - сборка оригинального DECtalk из `original/dectalk`.
+- `dectalk/build_backend.py` - сборка native backend из локальных исходников.
+- `dectalk/native_src/` - исходники DECtalk, нужные для CMake-сборки.
 - `dectalk/native_bin/` - локальные runtime-файлы DECtalk после сборки.
 - `dectalk-python.spec` - spec-файл PyInstaller.
 
@@ -31,14 +32,14 @@
 ### Запуск из исходников
 Требования:
 - Python 3.10+
-- `git`, `cmake`, `tar` и C-компилятор для первой сборки native backend.
+- `cmake` и C-компилятор для первой сборки native backend.
 
 ```bash
 cd /home/x13/VScodeProjects/tts/dectalk-python
 python -m dectalk -w hello.wav "Hello from DECtalk Python."
 ```
 
-Backend собирается автоматически при первом запуске, если runtime-файлы еще не созданы. Принудительная сборка:
+Backend собирается из локальных исходников автоматически при первом запуске, если runtime-файлы еще не созданы. Принудительная сборка:
 
 ```bash
 python -m dectalk.build_backend
@@ -108,11 +109,12 @@ python -m dectalk -w /tmp/dectalk-python-test.wav "Smoke test"
 
 Original DECtalk repository: https://github.com/dectalk/dectalk/
 
-The original DECtalk source archive in this workspace is next to it: `/home/x13/VScodeProjects/tts/original/dectalk`.
+The DECtalk sources needed for the local native backend build are bundled in `dectalk/native_src/`.
 
 ### Layout
 - `dectalk/` - Python package, CLI, and API.
-- `dectalk/build_backend.py` - builds original DECtalk from `original/dectalk`.
+- `dectalk/build_backend.py` - builds the native backend from local sources.
+- `dectalk/native_src/` - DECtalk sources needed for the CMake build.
 - `dectalk/native_bin/` - local DECtalk runtime files after the build.
 - `dectalk-python.spec` - PyInstaller spec file.
 
@@ -128,14 +130,14 @@ The original DECtalk source archive in this workspace is next to it: `/home/x13/
 ### Run From Source
 Requirements:
 - Python 3.10+
-- `git`, `cmake`, `tar`, and a C compiler for the first native backend build.
+- `cmake` and a C compiler for the first native backend build.
 
 ```bash
 cd /home/x13/VScodeProjects/tts/dectalk-python
 python -m dectalk -w hello.wav "Hello from DECtalk Python."
 ```
 
-The backend is built automatically on first run if the runtime files do not exist. To force a rebuild:
+The backend is built automatically from bundled sources on first run if the runtime files do not exist. To force a rebuild:
 
 ```bash
 python -m dectalk.build_backend
