@@ -169,6 +169,8 @@ def native_library_name() -> str:
 
 
 def native_bundle_dir() -> Path:
+    if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+        return Path(sys._MEIPASS) / "dectalk" / "native_bin"  # type: ignore[attr-defined]
     return Path(__file__).resolve().parent / "native_bin"
 
 
