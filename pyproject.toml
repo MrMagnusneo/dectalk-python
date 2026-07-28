@@ -8,7 +8,7 @@ version = "0.2.0"
 description = "Python bindings for the original DECtalk text-to-speech engine with a SAY-compatible CLI"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "See repository licenses and original source notices." }
+license = { file = "LICENSE" }
 authors = [{ name = "DECtalk Python port maintainers" }]
 
 [project.scripts]
